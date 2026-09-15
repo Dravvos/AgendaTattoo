@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AgendaTattoo.API/AgendaTattoo.API.csproj" />
+  <Project Path="AgendaTattoo.BLL/AgendaTattoo.BLL.csproj" Id="996dad82-3542-4b7f-a5d4-863083f2be59" />
+  <Project Path="AgendaTattoo.Data/AgendaTattoo.Data.csproj" Id="be1ba615-5004-49bd-b3d5-7dc0d4496382" />
+  <Project Path="AgendaTattoo.DTO/AgendaTattoo.DTO.csproj" Id="d314d864-8bc7-4000-8222-90d6b6d07ccc" />
+</Solution>
