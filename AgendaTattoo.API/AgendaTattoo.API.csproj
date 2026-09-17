@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\AgendaTattoo.BLL\AgendaTattoo.BLL.csproj" />
+    <ProjectReference Include="..\AgendaTattoo.DTO\AgendaTattoo.DTO.csproj" />
   </ItemGroup>
 
 </Project>
