@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/AgendaTattoo.API/appsettings.Development.json
+/AgendaTattoo.API/appsettings.Development.json
