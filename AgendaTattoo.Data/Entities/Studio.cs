@@ -21,6 +21,8 @@ namespace AgendaTattoo.Data.Entities
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
 
+        /// <summary>IANA timezone id (ex.: "America/Sao_Paulo"), usado para calcular horários disponíveis na agenda pública.</summary>
+        public string TimeZoneId { get; set; } = "America/Sao_Paulo";
         public bool IsActive { get; set; } = true;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

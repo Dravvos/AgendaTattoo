@@ -19,6 +19,8 @@ namespace AgendaTattoo.Data.Context
         public DbSet<Service> Services => Set<Service>();
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<ArtistWorkingHours> ArtistWorkingHours => Set<ArtistWorkingHours>();
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

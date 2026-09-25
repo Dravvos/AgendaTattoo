@@ -1,3 +1,4 @@
+using AgendaTattoo.API.Infrastructure;
 using AgendaTattoo.BLL.Interfaces;
 using AgendaTattoo.BLL.Security;
 using AgendaTattoo.BLL.Services;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +84,7 @@ builder.Services
             ValidAudience = jwtOptions.Audience,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.SigningKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
 
             ValidateLifetime = true,
             RequireExpirationTime = true,
@@ -112,6 +115,22 @@ builder.Services.AddRateLimiter(options =>
     options.AddFixedWindowLimiter("auth", limiterOptions =>
     {
         limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // Navegação na agenda pública (consultar estúdio, serviços, horários livres etc.).
+    options.AddFixedWindowLimiter("public", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 60;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // Criar um agendamento é a ação pública mais sensível a abuso/spam — limite bem mais apertado.
+    options.AddFixedWindowLimiter("public-booking", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
         limiterOptions.Window = TimeSpan.FromMinutes(1);
         limiterOptions.QueueLimit = 0;
     });
@@ -151,23 +170,39 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IServiceCatalogService, ServiceCatalogService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IPublicBookingService, PublicBookingService>();
+
+// Traduz exceções de domínio (NotFound/Conflict/Forbidden/ValidationApp) em respostas
+// HTTP consistentes, sem precisar de try/catch repetido em cada controller.
+builder.Services.AddExceptionHandler<AppExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Precisa vir antes de qualquer outro middleware que possa lançar exceção de domínio.
+app.UseExceptionHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
+    app.MapScalarApiReference().AllowAnonymous();
+    
 }
 else
 {
     app.UseHsts();
 }
-
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseCors("Default");
