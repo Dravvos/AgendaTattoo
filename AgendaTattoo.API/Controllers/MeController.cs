@@ -29,6 +29,7 @@ namespace AgendaTattoo.API.Controllers
             {
                 userId = _currentUser.UserId,
                 studioSlug = studio?.Slug,
+                studioId = _currentUser.StudioId,
                 roles = _currentUser.Roles,
             });
         }
