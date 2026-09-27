@@ -53,7 +53,7 @@ public class AuthService : IAuthService
             Name = request.StudioName.Trim(),
             Slug = slug,
         };
-        _db.Studios.Add(studio);
+        await _db.Studios.AddAsync(studio);
         await _db.SaveChangesAsync(ct);
 
         var user = new ApplicationUser

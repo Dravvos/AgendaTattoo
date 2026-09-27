@@ -177,6 +177,31 @@ namespace AgendaTattoo.Data.Migrations
                     b.ToTable("Appointments", (string)null);
                 });
 
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistWorkingHours", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.ToTable("ArtistWorkingHours");
+                });
+
             modelBuilder.Entity("AgendaTattoo.Data.Entities.Client", b =>
                 {
                     b.Property<Guid>("Id")
@@ -323,6 +348,10 @@ namespace AgendaTattoo.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -481,6 +510,17 @@ namespace AgendaTattoo.Data.Migrations
                     b.Navigation("Studio");
                 });
 
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistWorkingHours", b =>
+                {
+                    b.HasOne("AgendaTattoo.Data.Entities.ApplicationUser", "Artist")
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+                });
+
             modelBuilder.Entity("AgendaTattoo.Data.Entities.Client", b =>
                 {
                     b.HasOne("AgendaTattoo.Data.Entities.Studio", "Studio")
@@ -570,6 +610,8 @@ namespace AgendaTattoo.Data.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("WorkingHours");
                 });
 
             modelBuilder.Entity("AgendaTattoo.Data.Entities.Client", b =>

@@ -26,4 +26,5 @@ public class CurrentUserService : ICurrentUserService
 
     public IReadOnlyList<string> Roles =>
         User?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray() ?? [];
+
 }

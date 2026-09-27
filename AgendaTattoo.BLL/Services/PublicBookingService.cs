@@ -32,6 +32,21 @@ public class PublicBookingService : IPublicBookingService
         };
     }
 
+    public async Task<PublicStudioDto> GetStudioAsync(Guid studioId, CancellationToken ct = default)
+    {
+        var studio = await FindStudioAsync(studioId, ct);
+
+        return new PublicStudioDto
+        {
+            Name = studio.Name,
+            Description = studio.Description,
+            Address = studio.Address,
+            PhoneNumber = studio.PhoneNumber,
+            Slug = studio.Slug,
+        };
+    }
+
+
     public async Task<IReadOnlyList<PublicServiceDto>> ListServicesAsync(string slug, CancellationToken ct = default)
     {
         var studio = await FindStudioAsync(slug, ct);
@@ -160,6 +175,12 @@ public class PublicBookingService : IPublicBookingService
     {
         var normalized = slug.Trim().ToLowerInvariant();
         var studio = await _db.Studios.FirstOrDefaultAsync(s => s.Slug == normalized && s.IsActive, ct);
+        return studio ?? throw new NotFoundException("Estúdio não encontrado.");
+    }
+
+    private async Task<Studio> FindStudioAsync(Guid studioId, CancellationToken ct)
+    {
+        var studio = await _db.Studios.FirstOrDefaultAsync(s => s.Id == studioId && s.IsActive, ct);
         return studio ?? throw new NotFoundException("Estúdio não encontrado.");
     }
 }
