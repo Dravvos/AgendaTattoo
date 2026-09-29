@@ -1,3 +1,4 @@
+using AgendaTattoo.BLL.Exceptions;
 using AgendaTattoo.BLL.Interfaces;
 using AgendaTattoo.BLL.Models;
 using AgendaTattoo.BLL.Security;
@@ -20,6 +21,8 @@ public class AuthService : IAuthService
     private readonly AgendaTattooDbContext _db;
     private readonly ITokenService _tokenService;
     private readonly JwtOptions _jwtOptions;
+    private readonly FrontendOptions _frontendOptions;
+    private readonly IEmailSender _emailSender;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
@@ -27,7 +30,9 @@ public class AuthService : IAuthService
         RoleManager<ApplicationRole> roleManager,
         AgendaTattooDbContext db,
         ITokenService tokenService,
-        IOptions<JwtOptions> jwtOptions)
+        IOptions<JwtOptions> jwtOptions,
+        IOptions<FrontendOptions> frontendOptions,
+        IEmailSender emailSender)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -35,6 +40,8 @@ public class AuthService : IAuthService
         _db = db;
         _tokenService = tokenService;
         _jwtOptions = jwtOptions.Value;
+        _frontendOptions = frontendOptions.Value;
+        _emailSender = emailSender;
     }
 
     public async Task<AuthResult> RegisterStudioAsync(RegisterRequest request, CancellationToken ct = default)
@@ -178,4 +185,41 @@ public class AuthService : IAuthService
         return AuthResult.Success(accessToken, expiresAt, refreshToken);
     }
 
+    public async Task RequestPasswordResetAsync(string email, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email.Trim());
+        if (user is null || !user.IsActive)
+            return;
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var resetLink =
+            $"{_frontendOptions.BaseUrl}/redefinir-senha?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
+
+        await _emailSender.SendPasswordResetEmailAsync(user.Email!, user.FullName, resetLink, ct);
+
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email.Trim());
+
+        // Mensagem genérica: não diferencia "e-mail não existe" de "token inválido/expirado".
+        if (user is null)
+            throw new ValidationAppException("Link de redefinição inválido ou expirado.");
+
+        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            var isTokenError = result.Errors.Any(e => e.Code is "InvalidToken");
+            throw new ValidationAppException(
+                isTokenError
+                    ? "Link de redefinição inválido ou expirado."
+                    : string.Join(' ', result.Errors.Select(e => e.Description)));
+        }
+
+        // Redefinição de senha é um forte indício de possível conta comprometida —
+        // revoga todas as sessões ativas, igual já fazemos na reutilização de refresh token.
+        await RevokeAllActiveTokensAsync(user.Id, ct);
+
+    }
 }

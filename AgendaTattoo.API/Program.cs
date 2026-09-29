@@ -177,7 +177,8 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPublicBookingService, PublicBookingService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IStudioService, StudioService>();
-
+builder.Services.Configure<FrontendOptions>(builder.Configuration.GetSection(FrontendOptions.SectionName));
+builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
 // Traduz exceções de domínio (NotFound/Conflict/Forbidden/ValidationApp) em respostas
 // HTTP consistentes, sem precisar de try/catch repetido em cada controller.
 builder.Services.AddExceptionHandler<AppExceptionHandler>();
