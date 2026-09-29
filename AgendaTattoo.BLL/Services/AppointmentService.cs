@@ -39,7 +39,7 @@ public class AppointmentService : IAppointmentService
 
         var effectiveArtistId = ResolveArtistFilter(artistId);
 
-        var query = _db.Appointments
+        var query = _db.Appointments.AsNoTracking()
             .Include(a => a.Artist)
             .Include(a => a.Client)
             .Include(a => a.Service)
@@ -63,15 +63,15 @@ public class AppointmentService : IAppointmentService
         if (!IsOwner && _currentUser.UserId != request.ArtistId)
             throw new ForbiddenException("Você só pode criar agendamentos na sua própria agenda.");
 
-        var service = await _db.Services
+        var service = await _db.Services.AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.StudioId == StudioId && s.IsActive, ct)
             ?? throw new NotFoundException("Serviço não encontrado.");
 
-        var artistExists = await _db.Users.AnyAsync(u => u.Id == request.ArtistId && u.StudioId == StudioId && u.IsActive, ct);
+        var artistExists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == request.ArtistId && u.StudioId == StudioId && u.IsActive, ct);
         if (!artistExists)
             throw new NotFoundException("Artista não encontrado.");
 
-        var clientExists = await _db.Clients.AnyAsync(c => c.Id == request.ClientId && c.StudioId == StudioId, ct);
+        var clientExists = await _db.Clients.AsNoTracking().AnyAsync(c => c.Id == request.ClientId && c.StudioId == StudioId, ct);
         if (!clientExists)
             throw new NotFoundException("Cliente não encontrado.");
 
@@ -169,7 +169,7 @@ public class AppointmentService : IAppointmentService
 
     private async Task EnsureNoOverlapAsync(Guid artistId, DateTimeOffset startsAt, DateTimeOffset endsAt, Guid? excludeAppointmentId, CancellationToken ct)
     {
-        var hasOverlap = await _db.Appointments.AnyAsync(a =>
+        var hasOverlap = await _db.Appointments.AsNoTracking().AnyAsync(a =>
             a.ArtistId == artistId &&
             a.Status != AppointmentStatus.Cancelled &&
             a.Id != (excludeAppointmentId ?? Guid.Empty) &&

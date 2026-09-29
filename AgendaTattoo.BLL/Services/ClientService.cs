@@ -22,7 +22,7 @@ public class ClientService : IClientService
 
     public async Task<IReadOnlyList<ClientDto>> ListAsync(string? search, CancellationToken ct = default)
     {
-        var query = _db.Clients.Where(c => c.StudioId == StudioId);
+        var query = _db.Clients.AsNoTracking().Where(c => c.StudioId == StudioId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

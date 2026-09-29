@@ -22,7 +22,7 @@ public class ServiceCatalogService : IServiceCatalogService
 
     public async Task<IReadOnlyList<ServiceDto>> ListAsync(CancellationToken ct = default)
     {
-        var services = await _db.Services
+        var services = await _db.Services.AsNoTracking()
             .Where(s => s.StudioId == StudioId)
             .OrderBy(s => s.Name)
             .ToListAsync(ct);

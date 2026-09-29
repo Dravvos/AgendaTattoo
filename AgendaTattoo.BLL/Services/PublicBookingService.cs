@@ -51,7 +51,7 @@ public class PublicBookingService : IPublicBookingService
     {
         var studio = await FindStudioAsync(slug, ct);
 
-        var services = await _db.Services
+        var services = await _db.Services.AsNoTracking()
             .Where(s => s.StudioId == studio.Id && s.IsActive)
             .OrderBy(s => s.Name)
             .ToListAsync(ct);
@@ -70,7 +70,7 @@ public class PublicBookingService : IPublicBookingService
     {
         var studio = await FindStudioAsync(slug, ct);
 
-        var artists = await _db.Users
+        var artists = await _db.Users.AsNoTracking()
             .Where(u => u.StudioId == studio.Id && u.IsActive)
             .OrderBy(u => u.FullName)
             .ToListAsync(ct);
@@ -94,11 +94,11 @@ public class PublicBookingService : IPublicBookingService
     {
         var studio = await FindStudioAsync(slug, ct);
 
-        var service = await _db.Services
+        var service = await _db.Services.AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.StudioId == studio.Id && s.IsActive, ct)
             ?? throw new NotFoundException("Serviço não encontrado.");
 
-        var artistExists = await _db.Users.AnyAsync(u => u.Id == request.ArtistId && u.StudioId == studio.Id && u.IsActive, ct);
+        var artistExists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == request.ArtistId && u.StudioId == studio.Id && u.IsActive, ct);
         if (!artistExists)
             throw new NotFoundException("Artista não encontrado.");
 
@@ -118,7 +118,7 @@ public class PublicBookingService : IPublicBookingService
         //    Postgres (EXCLUDE USING gist) — fica como possível reforço futuro.
         await using var transaction = await _db.Database.BeginTransactionAsync(ct);
 
-        var hasOverlap = await _db.Appointments.AnyAsync(a =>
+        var hasOverlap = await _db.Appointments.AsNoTracking().AnyAsync(a =>
             a.ArtistId == request.ArtistId &&
             a.Status != AppointmentStatus.Cancelled &&
             a.StartsAt < endsAt &&

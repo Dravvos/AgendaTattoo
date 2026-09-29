@@ -41,7 +41,7 @@ public class AuthService : IAuthService
     {
         var slug = request.StudioSlug.Trim().ToLowerInvariant();
 
-        var slugTaken = await _db.Studios.AnyAsync(s => s.Slug == slug, ct);
+        var slugTaken = await _db.Studios.AsNoTracking().AnyAsync(s => s.Slug == slug, ct);
         if (slugTaken)
             return AuthResult.Fail("Esse identificador de estúdio já está em uso.");
 
@@ -107,7 +107,7 @@ public class AuthService : IAuthService
     public async Task<AuthResult> RefreshTokenAsync(string refreshToken, string ipAddress, CancellationToken ct = default)
     {
         var hash = _tokenService.HashToken(refreshToken);
-        var stored = await _db.RefreshTokens
+        var stored = await _db.RefreshTokens.AsNoTracking()
             .Include(rt => rt.User)
             .FirstOrDefaultAsync(rt => rt.TokenHash == hash, ct);
 
@@ -138,7 +138,7 @@ public class AuthService : IAuthService
     public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {
         var hash = _tokenService.HashToken(refreshToken);
-        var stored = await _db.RefreshTokens.FirstOrDefaultAsync(rt => rt.TokenHash == hash, ct);
+        var stored = await _db.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(rt => rt.TokenHash == hash, ct);
 
         if (stored is not null && stored.RevokedAt is null)
         {
@@ -149,7 +149,7 @@ public class AuthService : IAuthService
 
     private async Task RevokeAllActiveTokensAsync(Guid userId, CancellationToken ct)
     {
-        var tokens = await _db.RefreshTokens
+        var tokens = await _db.RefreshTokens.AsNoTracking()
             .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
             .ToListAsync(ct);
 

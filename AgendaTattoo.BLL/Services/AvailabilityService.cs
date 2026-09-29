@@ -27,7 +27,7 @@ public class AvailabilityService : IAvailabilityService
     {
         await EnsureCanManageAsync(artistId, ct);
 
-        var hours = await _db.ArtistWorkingHours
+        var hours = await _db.ArtistWorkingHours.AsNoTracking()
             .Where(w => w.ArtistId == artistId)
             .OrderBy(w => w.DayOfWeek)
             .ToListAsync(ct);
@@ -80,18 +80,18 @@ public class AvailabilityService : IAvailabilityService
     public async Task<IReadOnlyList<AvailableSlotDto>> GetAvailableSlotsAsync(
         Guid studioId, Guid artistId, Guid serviceId, DateOnly date, CancellationToken ct = default)
     {
-        var studio = await _db.Studios.FirstOrDefaultAsync(s => s.Id == studioId, ct)
+        var studio = await _db.Studios.AsNoTracking().FirstOrDefaultAsync(s => s.Id == studioId, ct)
             ?? throw new NotFoundException("Estúdio não encontrado.");
 
-        var service = await _db.Services
+        var service = await _db.Services.AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == serviceId && s.StudioId == studioId && s.IsActive, ct)
             ?? throw new NotFoundException("Serviço não encontrado.");
 
-        var artistExists = await _db.Users.AnyAsync(u => u.Id == artistId && u.StudioId == studioId && u.IsActive, ct);
+        var artistExists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == artistId && u.StudioId == studioId && u.IsActive, ct);
         if (!artistExists)
             throw new NotFoundException("Artista não encontrado.");
 
-        var workingHours = await _db.ArtistWorkingHours
+        var workingHours = await _db.ArtistWorkingHours.AsNoTracking()
             .FirstOrDefaultAsync(w => w.ArtistId == artistId && w.DayOfWeek == date.DayOfWeek, ct);
 
         if (workingHours is null)
@@ -117,7 +117,7 @@ public class AvailabilityService : IAvailabilityService
         var step = TimeSpan.FromMinutes(SlotGranularityMinutes);
 
         // Só os agendamentos ativos daquele artista que se sobrepõem à janela do dia importam para o cálculo.
-        var dayAppointments = await _db.Appointments
+        var dayAppointments = await _db.Appointments.AsNoTracking()
             .Where(a => a.ArtistId == artistId
                 && a.Status != AppointmentStatus.Cancelled
                 && a.StartsAt < dayEndUtc
@@ -152,7 +152,7 @@ public class AvailabilityService : IAvailabilityService
         if (!isOwner && !isSelf)
             throw new ForbiddenException("Você só pode gerenciar os próprios horários de trabalho.");
 
-        var artistExists = await _db.Users.AnyAsync(u => u.Id == artistId && u.StudioId == StudioId, ct);
+        var artistExists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == artistId && u.StudioId == StudioId, ct);
         if (!artistExists)
             throw new NotFoundException("Artista não encontrado.");
     }
