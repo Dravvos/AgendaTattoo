@@ -19,5 +19,6 @@ namespace AgendaTattoo.Data.Entities
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public ICollection<ArtistWorkingHours> WorkingHours { get; set; } = new List<ArtistWorkingHours>();
+        public ICollection<ArtistTimeOff> TimeOffs { get; set; } = new List<ArtistTimeOff>();
     }
 }

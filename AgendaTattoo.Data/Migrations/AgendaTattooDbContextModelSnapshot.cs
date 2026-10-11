@@ -177,6 +177,35 @@ namespace AgendaTattoo.Data.Migrations
                     b.ToTable("Appointments", (string)null);
                 });
 
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistTimeOff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<TimeOnly?>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.ToTable("ArtistTimeOffs", (string)null);
+                });
+
             modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistWorkingHours", b =>
                 {
                     b.Property<Guid>("Id")
@@ -510,6 +539,17 @@ namespace AgendaTattoo.Data.Migrations
                     b.Navigation("Studio");
                 });
 
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistTimeOff", b =>
+                {
+                    b.HasOne("AgendaTattoo.Data.Entities.ApplicationUser", "Artist")
+                        .WithMany("TimeOffs")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+                });
+
             modelBuilder.Entity("AgendaTattoo.Data.Entities.ArtistWorkingHours", b =>
                 {
                     b.HasOne("AgendaTattoo.Data.Entities.ApplicationUser", "Artist")
@@ -610,6 +650,8 @@ namespace AgendaTattoo.Data.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("TimeOffs");
 
                     b.Navigation("WorkingHours");
                 });

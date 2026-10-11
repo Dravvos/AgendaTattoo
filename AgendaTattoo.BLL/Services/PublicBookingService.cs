@@ -171,6 +171,15 @@ public class PublicBookingService : IPublicBookingService
         };
     }
 
+    public async Task<PublicAvailabilityCalendarDto> GetAvailabilityCalendarAsync(
+    string slug, Guid artistId, DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        var studio = await FindStudioAsync(slug, ct);
+
+        return await _availabilityService.GetAvailabilityCalendarAsync(studio.Id, artistId, from, to, ct);
+    }
+
+
     private async Task<Studio> FindStudioAsync(string slug, CancellationToken ct)
     {
         var normalized = slug.Trim().ToLowerInvariant();

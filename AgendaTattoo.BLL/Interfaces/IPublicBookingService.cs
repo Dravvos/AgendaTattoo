@@ -15,4 +15,6 @@ public interface IPublicBookingService
         string slug, Guid artistId, Guid serviceId, DateOnly date, CancellationToken ct = default);
 
     Task<PublicBookingResponse> CreateBookingAsync(string slug, CreatePublicBookingRequest request, CancellationToken ct = default);
+    Task<PublicAvailabilityCalendarDto> GetAvailabilityCalendarAsync(
+        string slug, Guid artistId, DateOnly from, DateOnly to, CancellationToken ct = default);
 }

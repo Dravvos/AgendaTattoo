@@ -48,5 +48,18 @@ namespace AgendaTattoo.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Dias da semana em que o artista atende + datas de folga de dia inteiro no período
+        /// [from, to] — a página pública usa isso para desabilitar esses dias no calendário.
+        /// </summary>
+        [HttpGet("availability/calendar")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+        public async Task<ActionResult<PublicAvailabilityCalendarDto>> GetAvailabilityCalendar(
+            string slug, [FromQuery] Guid artistId, [FromQuery] DateOnly from, [FromQuery] DateOnly to, CancellationToken ct)
+            => Ok(await _publicBooking.GetAvailabilityCalendarAsync(slug, artistId, from, to, ct));
+
+        
+
+
     }
 }
