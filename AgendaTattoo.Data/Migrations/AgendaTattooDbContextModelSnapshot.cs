@@ -22,6 +22,108 @@ namespace AgendaTattoo.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.AnamnesisForm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("AllergiesDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("ConsentAccepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ConsentText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("ConsumedAlcoholOrDrugsLast24h")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("CurrentMedications")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("HadPreviousTattooReaction")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasAllergies")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasBloodClottingDisorder")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasDiabetes")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasEpilepsy")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasHeartCondition")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasKeloidHistory")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasSkinConditions")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPregnantOrBreastfeeding")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PreviousTattooReactionDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("SignatureFullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("SkinConditionsDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SubmittedFromIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("UsesBloodThinners")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("UsesIsotretinoin")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("StudioId", "ClientId");
+
+                    b.ToTable("AnamnesisForms", (string)null);
+                });
+
             modelBuilder.Entity("AgendaTattoo.Data.Entities.ApplicationRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -491,6 +593,33 @@ namespace AgendaTattoo.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("AgendaTattoo.Data.Entities.AnamnesisForm", b =>
+                {
+                    b.HasOne("AgendaTattoo.Data.Entities.Appointment", "Appointment")
+                        .WithOne()
+                        .HasForeignKey("AgendaTattoo.Data.Entities.AnamnesisForm", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AgendaTattoo.Data.Entities.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AgendaTattoo.Data.Entities.Studio", "Studio")
+                        .WithMany()
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Studio");
                 });
 
             modelBuilder.Entity("AgendaTattoo.Data.Entities.ApplicationUser", b =>
